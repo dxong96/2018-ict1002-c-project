@@ -89,7 +89,13 @@ int ws_guess_data_type(const char *value) {
  *   ws - a pointer to the worksheet to be de-allocated.
  */
 void ws_free(WORKSHEET *ws) {
-	
+  for (int x = 0; x < ws->rows; ++x) {
+    free(ws->cells[x]);
+    for (int y = 0; y < ws->cols; ++y) {
+      free(ws->cells[x][y]);
+    }
+  }
+  free(ws);
 }
 
 
@@ -105,8 +111,37 @@ void ws_free(WORKSHEET *ws) {
  *   NULL, if there was a memory allocation failure
  */
 WORKSHEET *ws_new(int cols, int rows) {
-	
-	return NULL;
+	WORKSHEET *ws = malloc (sizeof(WORKSHEET));
+
+  if (ws == NULL) {
+    return NULL;
+  } else {
+    ws->cols = cols;
+    ws->rows = rows;
+
+    char *** cells = malloc(rows * sizeof(char **));
+    for (int x = 0; x < rows; ++x) {
+      cells[x] = malloc(cols * sizeof(char *));
+      
+      if (cells[x] == NULL) {
+        return NULL;
+      }
+
+      for (int y = 0; y < cols; ++y) {
+        cells[x][y] = malloc(MAX_WORD * sizeof(char));
+        // set the string null char at the first char to prevent showing strange characters
+        cells[x][y][0] = '\0';
+
+        if (cells[x][y] == NULL) {
+          return NULL;
+        }
+      }
+    }
+    ws->cells = cells;
+
+
+    return ws;
+  }
 	 
 }
  
@@ -146,7 +181,7 @@ int ws_read_csv(WORKSHEET *ws, FILE *f) {
   *   value - the new value of the cell (NULL to erase)
   */
 void ws_set(WORKSHEET *ws, int col, int row, const char *value) {
-	
+	strncpy(ws->cells[row][col], value, MAX_WORD);
 }
 
 

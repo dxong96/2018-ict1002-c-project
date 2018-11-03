@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sheet1002.h"
+
+WORKSHEET *worksheet;
  
 /*
  * Execute a command.
@@ -63,9 +65,10 @@ int do_command(const char *command, const char *arg1, const char *arg2, char *ou
 		do_sum(arg1, arg2, output);
 	else if (compare_token(command, "width") == 0)
 		do_width(arg1, output);
-	else if (compare_token(command, "exit") == 0)
+	else if (compare_token(command, "exit") == 0) {
+		ws_free(worksheet);
 		done = 1;
-	else
+	} else
 		snprintf(output, MAX_OUTPUT, "Unrecognised command: %s.", command);
 	
 	return done;
@@ -121,9 +124,20 @@ void do_load(const char *arg1, char *output) {
  *   arg2 - the number of rows
  */
 void do_new(const char *arg1, const char *arg2, char *output) {
-	
-	snprintf(output, MAX_OUTPUT, "Not implemented.");
-	
+	int cols = atoi(arg1);
+	int rows = atoi(arg2);
+
+	if (cols > MAX_COLUMNS) {
+		snprintf(output, MAX_OUTPUT, "You are allowed only up to 26 columns");
+	} else {
+		if (worksheet != NULL) {
+			ws_free(worksheet);
+		}
+
+		worksheet = ws_new(cols, rows);
+		viewport_set_worksheet(worksheet);
+		snprintf(output, MAX_OUTPUT, "Successfully created worksheet with %d cols and %d rows.", cols, rows);
+	}
 }
 
 
@@ -161,9 +175,35 @@ void do_save(const char *arg1, char *output) {
  *   arg2 - the value for the cell (NULL to make the cell blank)
  */
 void do_set(const char *arg1, const char *arg2, char *output) {
-	
-	snprintf(output, MAX_OUTPUT, "Not implemented.");
-	
+	char col = arg1[0];
+
+	if (col < 'A' || col > 'Z') {
+		snprintf(output, MAX_OUTPUT, "Enter a column from A to Z only.");
+		return;
+	}
+
+	int cell_input_length = strlen(arg1);
+
+	if (cell_input_length == 1) {
+		snprintf(output, MAX_OUTPUT, "Missing row number");
+		return;
+	}
+
+	for (int i = 1 ; i < cell_input_length; i++) {
+		if (!isdigit(arg1[i])) {
+			snprintf(output, MAX_OUTPUT, "Invalid row number");
+			return;
+		}
+	}
+
+	// minus 65 as 'A' = 65
+	int col_num = col - 65;
+	// Convert the chars after first character to int
+	int row_num = atoi(arg1+1) - 1;
+
+	// snprintf(output, MAX_OUTPUT, "Setting row %d and col %d", row_num, col_num);
+
+	ws_set(worksheet, col_num, row_num, arg2);
 }
 
 

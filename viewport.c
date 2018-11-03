@@ -14,7 +14,9 @@
 
 #include <stdio.h>
 #include "sheet1002.h"
- 
+
+WORKSHEET *worksheet;
+
 /*
  * Print the current viewing window to the screen.
  *
@@ -23,7 +25,35 @@
  *   term_rows - the height of the space in which to display the window, in characters
  */
 void viewport_display(int term_cols, int term_rows) {
+	if (worksheet == NULL) {
+		return;
+	}
 
+	int columns = worksheet->cols;
+	int rows = worksheet->rows;
+	
+	if (columns > term_cols) {
+		columns = term_cols;
+	}
+
+	if (rows > term_rows) {
+		columns = term_rows;
+	}
+
+	printf("%-5c", ' ');
+	for (int i = 0; i < columns; ++i) {
+		printf("%-5c", 65 + i);
+	}
+	printf("\n");
+
+	for (int x = 0; x < rows; ++x) {
+		printf("%-5d", x + 1);
+
+		for (int y = 0; y < columns; ++y) {
+			printf("%5s", worksheet->cells[x][y]);
+		}
+		printf("\n");
+	}
 }
 
 
@@ -95,5 +125,5 @@ void viewport_set_cursor(int col, int row) {
  *   ws - a pointer to the worksheet to be displayed
  */
 void viewport_set_worksheet(WORKSHEET *ws) {
-	
+	worksheet = ws;
 }

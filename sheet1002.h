@@ -28,10 +28,16 @@
 #define WS_DATA_TYPE_TEXT     1
 #define WS_DATA_TYPE_FLOAT    2
 
+#define MAX_COLUMNS 26
+
 /* a structure for representing a worksheet */
 typedef struct {
 	int cols;
 	int rows;
+	// array of rows
+	// each row is an array of column
+	// each column is array of char
+	char ***cells;
 	/* insert other data here as necessary */
 } WORKSHEET;
  
