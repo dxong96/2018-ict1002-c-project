@@ -25,9 +25,12 @@
  *   NAN (defined in math.h), otherwise
  */
 float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
-		
-		return NAN;
-	
+  char *value = ws->cells[row][col];
+	if (ws_guess_data_type(value) == WS_DATA_TYPE_FLOAT) {
+    return atof(value);
+  } else {
+	  return NAN;
+  }
 }
 
 
