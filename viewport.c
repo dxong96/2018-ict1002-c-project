@@ -37,7 +37,7 @@ void viewport_display(int term_cols, int term_rows) {
 	}
 
 	if (rows > term_rows) {
-		columns = term_rows;
+		rows = term_rows;
 	}
 
 	printf("%-5c", ' ');
@@ -50,7 +50,7 @@ void viewport_display(int term_cols, int term_rows) {
 		printf("%-5d", x + 1);
 
 		for (int y = 0; y < columns; ++y) {
-			printf("%5s", worksheet->cells[x][y]);
+			printf("%-5s", worksheet->cells[x][y]);
 		}
 		printf("\n");
 	}
@@ -77,6 +77,11 @@ int viewport_get_cellprec(void) {
  *   prec - the number of decimal places to show
  */
 void viewport_set_cellprec(int prec) {
+    if (worksheet == NULL) {
+        return;
+    }
+//    int prec_de = ws-> prec;
+    
 	
 }
 
@@ -88,7 +93,7 @@ void viewport_set_cellprec(int prec) {
  *   width - the number of characters in each cell to be displayed
  */
 void viewport_set_cellwidth(int width) {
-	
+ 
 }
 
 
@@ -112,8 +117,13 @@ void viewport_set_cursor(int col, int row) {
  *   NULL, if there is no worksheet displayed
  */
  WORKSHEET *viewport_get_worksheet(void) {
-	 
-	 return NULL;
+     if (worksheet == NULL) {
+         return NULL;
+     }
+     else{
+         return worksheet;
+     }
+
 	 
  }
 

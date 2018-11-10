@@ -17,7 +17,7 @@
  /*
   * Main loop.
   */
-int main(char *argv[], int argc) {
+int main(int argc,char **argv) {
 
 	int num_tokens;				/* the number of tokens in the input */
 	char command[MAX_INPUT];	/* buffer for holding the command */

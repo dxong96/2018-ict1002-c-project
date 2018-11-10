@@ -25,6 +25,7 @@
  *   NAN (defined in math.h), otherwise
  */
 float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
+    
 		
 		return NAN;
 	
@@ -46,9 +47,10 @@ float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
  *   buf
  */
 char *ws_cell_as_string(WORKSHEET *ws, int col, int row, int width, int prec, char *buf) {
-		
+    
 	strcpy(buf, "");
 	
+    
 	return buf;
 	
 }
