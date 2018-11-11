@@ -84,6 +84,9 @@ int do_command(const char *command, const char *arg1, const char *arg2, char *ou
  *   arg2 - the opposite corner of the rectangle to be averaged
  */
 void do_avg(const char *arg1, const char *arg2, char *output) {
+	if (!is_cell_valid(arg1) || !is_cell_valid(arg2)) {
+		return;
+	}
 	
     int col_num = arg1[0];
     int col_num2 = arg2[0];
@@ -134,7 +137,6 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
             
         }
     }avg_num = sum / counter;
-    snprintf(output, MAX_OUTPUT,"The avg is %f", avg_num);
 	
 }
 
@@ -231,26 +233,10 @@ void do_save(const char *arg1, char *output) {
  *   arg2 - the value for the cell (NULL to make the cell blank)
  */
 void do_set(const char *arg1, const char *arg2, char *output) {
+	if (!is_cell_valid(arg1, output)) {
+		return;
+	}
 	char col = arg1[0];
-
-	if (col < 'A' || col > 'Z') {
-		snprintf(output, MAX_OUTPUT, "Enter a column from A to Z only.");
-		return;
-	}
-
-	int cell_input_length = strlen(arg1);
-
-	if (cell_input_length == 1) {
-		snprintf(output, MAX_OUTPUT, "Missing row number");
-		return;
-	}
-
-	for (int i = 1 ; i < cell_input_length; i++) {
-		if (!isdigit(arg1[i])) {
-			snprintf(output, MAX_OUTPUT, "Invalid row number");
-			return;
-		}
-	}
 
 	// minus 65 as 'A' = 65
 	int col_num = col - 65;
@@ -260,6 +246,7 @@ void do_set(const char *arg1, const char *arg2, char *output) {
 	// snprintf(output, MAX_OUTPUT, "Setting row %d and col %d", row_num, col_num);
 
 	ws_set(worksheet, col_num, row_num, arg2);
+	snprintf(output, MAX_OUTPUT, "%d\n", ws_guess_data_type(arg2));
 }
 
 
@@ -301,6 +288,10 @@ void do_sum(const char *arg1, const char *arg2, char *output) {
 //        sum += f;
 //    const char *arg1 = "B1";
 //    const char *arg2 = "D3";
+
+	if (!is_cell_valid(arg1) || !is_cell_valid(arg2)) {
+		return;
+	}
     
     int col_num = arg1[0];
     int col_num2 = arg2[0];
@@ -349,8 +340,6 @@ void do_sum(const char *arg1, const char *arg2, char *output) {
         snprintf(output, MAX_OUTPUT,"The sum is %f", sum);
     
 //     snprintf(output, MAX_OUTPUT, "%c,%d", i, k);
-	
-	
 
 }
 
@@ -366,4 +355,29 @@ void do_width(const char *arg1, char *output) {
 	
 	snprintf(output, MAX_OUTPUT, "Not implemented.");
 	
+}
+
+int is_cell_valid(const char *arg, char *output) {
+	char col = arg[0];
+
+	if (col < 'A' || col > 'Z') {
+		snprintf(output, MAX_OUTPUT, "Enter a column from A to Z only.");
+		return 0;
+	}
+
+	int cell_input_length = strlen(arg);
+
+	if (cell_input_length == 1) {
+		snprintf(output, MAX_OUTPUT, "Missing row number");
+		return 0;
+	}
+
+	for (int i = 1 ; i < cell_input_length; i++) {
+		if (!isdigit(arg[i])) {
+			snprintf(output, MAX_OUTPUT, "Invalid row number");
+			return 0;
+		}
+	}
+
+	return 1;
 }
