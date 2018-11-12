@@ -25,10 +25,12 @@
  *   NAN (defined in math.h), otherwise
  */
 float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
-    
-		
-		return NAN;
-	
+  char *value = ws->cells[row][col];
+	if (ws_guess_data_type(value) == WS_DATA_TYPE_FLOAT) {
+    return atof(value);
+  } else {
+	  return NAN;
+  }
 }
 
 
@@ -78,8 +80,33 @@ char *ws_cell_as_string(WORKSHEET *ws, int col, int row, int width, int prec, ch
  *   WS_DATA_TYPE_ILLEGAL, otherwise
  */
 int ws_guess_data_type(const char *value) {
-	
-	return WS_DATA_TYPE_TEXT;
+  // atof gives a result more than 1
+	if (atof(value)) {
+    return WS_DATA_TYPE_FLOAT;
+  } else {
+    // atof gives 0
+    int dots_zero_only = 1;
+    int alpha_num_only = 1;
+    int length = strlen(value);
+    // check that the string is 0.0 or 0
+    for (int i = 0; i < length; i++) {
+      char c = value[0];
+      if (c != '0' || c != '.') {
+        dots_zero_only = 0;
+      }
+      if (!isalnum(c)) {
+        alpha_num_only = 0;
+      }
+    }
+
+    if (dots_zero_only) {
+      return WS_DATA_TYPE_FLOAT;
+    } else if (alpha_num_only) {
+      return WS_DATA_TYPE_TEXT;
+    } else {
+      return WS_DATA_TYPE_ILLEGAL;
+    }
+  }
 }
 		
 
