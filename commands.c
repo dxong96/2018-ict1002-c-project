@@ -87,59 +87,64 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
 	if (!is_cell_valid(arg1, output) || !is_cell_valid(arg2, output)) {
 		return;
 	}
-	
-    int col_num = arg1[0];
-    int col_num2 = arg2[0];
-    //    int temp_num = arg2[0] -65;
-    int row_num = atoi(arg1+1);
-    int row_num2 = atoi(arg2+1);
-    int temp_row = atoi(arg1+1);
-    int diff = col_num - col_num2;
-    if(diff < 0){
-        diff = diff * -1;
+
+    char col = arg1[0];
+    char col2 = arg2[0];
+    
+    int row_num = atoi(arg1+1) - 1;
+    int row_num2 = atoi(arg2+1) - 1;
+
+    int col_num = col - 65;
+    int col_num2 = col2 - 65;
+
+    if (col_num2 != col_num && row_num2 != row_num) {
+    	snprintf(output, MAX_OUTPUT, "The row or column of the two cell must be the same");
+    	return;
     }
-    int col_int = col_num -65;
-    int col_int2 = col_num2 -65;
-    int temp_int = col_int;
+
+    int diff;
+    int start;
+
     float sum = 0;
-    int counter = 0;
     float avg_num = 0;
-    char ***cells = worksheet->cells;
-    //    printf("%c\n",col_num);
-    //    printf("%d\n",col_num-65);
-    //    printf("%d\n",col_num2-65);
-    //    printf("row num %d\n",row_num);
-    //    printf("row num2 %d\n",row_num2);
-    //    printf("%d\n",diff);
-    if(col_int2 < col_int){
-        //        printf("works");
-        col_int  = col_int2;
-        col_int2 = temp_int;
-        //        printf("%d\n",col_int);
-        //        printf("%d\n",col_int2);
+
+    if (col_num2 == col_num) {
+    	// average vertically
+    	diff = abs(row_num - row_num2);
+    	// set start as the lower row
+    	if (row_num > row_num2) {
+    		start = row_num2;
+    	} else {
+    		start = row_num;
+    	}
+	    for(int i = 0; i <= diff; i++) {
+	    	int idx = start + i;
+	    	float f = ws_cell_as_float(worksheet, col_num, idx);
+	        if (f != NAN) {
+	            sum = sum + f;
+	        }
+	    }
+    } else {
+    	// average horizontally
+    	diff = abs(col_num - col_num2);
+    	// set start as the lower column
+    	if (col_num > col_num2) {
+    		start = col_num2;
+    	} else {
+    		start = col_num;
+    	}
+    	for(int i = 0; i <= diff; i++) {
+	    	int idx = start + i;
+	    	float f = ws_cell_as_float(worksheet, idx, row_num);
+	        if (f != NAN) {
+	            sum = sum + f;
+	        }
+	    }
     }
-    if(row_num2 < row_num){
-        row_num  = row_num2;
-        row_num2 = temp_row;
-        //        printf("%d\n",row_num);
-        //        printf("%d\n",row_num2);
-    }
-    for(int i = col_int ; i <= col_int2 ; i++){
-        //        printf("col_works\n");
-        int c = i;
-        for(int k = row_num-1 ; k < row_num2  ; k++){
-            printf("row_works, %d%d\n", k,c);
-            float f = ws_cell_as_float(worksheet, c, k);
-            if (f != NAN) {
-                counter += 1;
-                sum = sum + f;
-            }
-        }
-    }
-    avg_num = sum / counter;
+
+    avg_num = sum / (diff+1);
 
     snprintf(output, MAX_OUTPUT,"The avg is %f", avg_num);
-	
 }
 
 
@@ -245,10 +250,13 @@ void do_set(const char *arg1, const char *arg2, char *output) {
 	// Convert the chars after first character to int
 	int row_num = atoi(arg1+1) - 1;
 
-	// snprintf(output, MAX_OUTPUT, "Setting row %d and col %d", row_num, col_num);
-
-	ws_set(worksheet, col_num, row_num, arg2);
-	snprintf(output, MAX_OUTPUT, "%d\n", ws_guess_data_type(arg2));
+	if (arg2 == NULL) {
+		ws_set(worksheet, col_num, row_num, "\0");
+		snprintf(output, MAX_OUTPUT, "Cell %s has been erased", arg1);
+	} else {
+		ws_set(worksheet, col_num, row_num, arg2);
+		snprintf(output, MAX_OUTPUT, "Cell %s set to %s", arg1, arg2);
+	}
 }
 
 
