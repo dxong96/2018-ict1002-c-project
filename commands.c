@@ -84,7 +84,7 @@ int do_command(const char *command, const char *arg1, const char *arg2, char *ou
  *   arg2 - the opposite corner of the rectangle to be averaged
  */
 void do_avg(const char *arg1, const char *arg2, char *output) {
-	if (!is_cell_valid(arg1) || !is_cell_valid(arg2)) {
+	if (!is_cell_valid(arg1, output) || !is_cell_valid(arg2, output)) {
 		return;
 	}
 	
@@ -129,14 +129,14 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
         int c = i;
         for(int k = row_num-1 ; k < row_num2  ; k++){
             printf("row_works, %d%d\n", k,c);
-            int f = atof(cells[k][c]);
-            sum = sum + f;
-            if(f > 0){
-            counter += 1;
+            float f = ws_cell_as_float(worksheet, c, k);
+            if (f != NAN) {
+                counter += 1;
+                sum = sum + f;
             }
-            
         }
-    }avg_num = sum / counter;
+    }
+    avg_num = sum / counter;
 
     snprintf(output, MAX_OUTPUT,"The avg is %f", avg_num);
 	
@@ -290,7 +290,7 @@ void do_sum(const char *arg1, const char *arg2, char *output) {
 //        sum += f;
 //    const char *arg1 = "B1";
 //    const char *arg2 = "D3";
-	if (!is_cell_valid(arg1) || !is_cell_valid(arg2)) {
+	if (!is_cell_valid(arg1, output) || !is_cell_valid(arg2, output)) {
 		return;
 	}
     

@@ -26,7 +26,7 @@
  */
 float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
   char *value = ws->cells[row][col];
-	if (ws_guess_data_type(value) == WS_DATA_TYPE_FLOAT) {
+    if (ws_guess_data_type(value) == WS_DATA_TYPE_FLOAT) {
     return atof(value);
   } else {
 	  return NAN;
@@ -91,7 +91,7 @@ int ws_guess_data_type(const char *value) {
     // check that the string is 0.0 or 0
     for (int i = 0; i < length; i++) {
       char c = value[0];
-      if (c != '0' || c != '.') {
+      if (c != '0' && c != '.') {
         dots_zero_only = 0;
       }
       if (!isalnum(c)) {
