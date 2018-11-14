@@ -251,8 +251,12 @@ void do_set(const char *arg1, const char *arg2, char *output) {
 		ws_set(worksheet, col_num, row_num, "\0");
 		snprintf(output, MAX_OUTPUT, "Cell %s has been erased", arg1);
 	} else {
-		ws_set(worksheet, col_num, row_num, arg2);
-		snprintf(output, MAX_OUTPUT, "Cell %s set to %s", arg1, arg2);
+		if (ws_guess_data_type(arg2) == WS_DATA_TYPE_ILLEGAL) {
+			snprintf(output, MAX_OUTPUT, "Invalid cell value");
+		} else {
+			ws_set(worksheet, col_num, row_num, arg2);
+			snprintf(output, MAX_OUTPUT, "Cell %s set to %s", arg1, arg2);
+		}
 	}
 }
 
