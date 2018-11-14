@@ -26,7 +26,8 @@
  */
 float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
   char *value = ws->cells[row][col];
-    if (ws_guess_data_type(value) == WS_DATA_TYPE_FLOAT) {
+  int type = ws_guess_data_type(value);
+  if (type == WS_DATA_TYPE_FLOAT) {
     return atof(value);
   } else {
 	  return NAN;
@@ -49,8 +50,28 @@ float ws_cell_as_float(WORKSHEET *ws, int col, int row) {
  *   buf
  */
 char *ws_cell_as_string(WORKSHEET *ws, int col, int row, int width, int prec, char *buf) {
-    
-	strcpy(buf, "");
+  char *value = ws->cells[row][col];
+  int type = ws_guess_data_type(value);
+  // plus one due to the null character
+  // printf includes the null character to the width
+  // so we add 1 to ensure that the width is correct
+  int actual_width = width + 1;
+  int exceeds_width = 0;
+  
+  if (type == WS_DATA_TYPE_TEXT) {
+    exceeds_width = strlen(value) > width;
+    snprintf(buf, actual_width, "%-*s", actual_width, value);
+  } else if (type == WS_DATA_TYPE_FLOAT) {
+    exceeds_width = strlen(value) + prec > width;
+    snprintf(buf, actual_width, "%-*.*f", actual_width, prec, atof(value));
+  }
+
+  if (exceeds_width) {
+    for (int i = 0; i < actual_width; i++) {
+      buf[i] = '#';
+    }
+    buf[width] = '\0';
+  }
 	
     
 	return buf;
@@ -88,9 +109,14 @@ int ws_guess_data_type(const char *value) {
     int dots_zero_only = 1;
     int alpha_num_only = 1;
     int length = strlen(value);
+
+    if (length == 0) {
+      return WS_DATA_TYPE_TEXT;
+    }
+
     // check that the string is 0.0 or 0
     for (int i = 0; i < length; i++) {
-      char c = value[0];
+      char c = value[i];
       if (c != '0' && c != '.') {
         dots_zero_only = 0;
       }

@@ -16,6 +16,8 @@
 #include "sheet1002.h"
 
 WORKSHEET *worksheet;
+int cell_width = 5;
+int cell_prec = 0;
 
 /*
  * Print the current viewing window to the screen.
@@ -40,17 +42,18 @@ void viewport_display(int term_cols, int term_rows) {
 		rows = term_rows;
 	}
 
-	printf("%-5c", ' ');
+	printf("%-*c",  cell_width, ' ');
 	for (int i = 0; i < columns; ++i) {
-		printf("%-5c", 65 + i);
+		printf("%-*c", cell_width, 65 + i);
 	}
 	printf("\n");
 
 	for (int x = 0; x < rows; ++x) {
-		printf("%-5d", x + 1);
+		printf("%-*d", cell_width, x + 1);
 
 		for (int y = 0; y < columns; ++y) {
-			printf("%-5s", worksheet->cells[x][y]);
+			char word[cell_width + 1];
+			printf(ws_cell_as_string(worksheet, y, x, cell_width, cell_prec, word));
 		}
 		printf("\n");
 	}
@@ -64,9 +67,7 @@ void viewport_display(int term_cols, int term_rows) {
  *   the number of decimal places that will be shown
  */
 int viewport_get_cellprec(void) {
-	
-	return 0;
-	
+	return cell_prec;
 }
 
 
@@ -77,12 +78,7 @@ int viewport_get_cellprec(void) {
  *   prec - the number of decimal places to show
  */
 void viewport_set_cellprec(int prec) {
-    if (worksheet == NULL) {
-        return;
-    }
-//    int prec_de = ws-> prec;
-    
-	
+    cell_prec = prec;
 }
 
 
@@ -93,7 +89,7 @@ void viewport_set_cellprec(int prec) {
  *   width - the number of characters in each cell to be displayed
  */
 void viewport_set_cellwidth(int width) {
- 
+	cell_width = width;
 }
 
 

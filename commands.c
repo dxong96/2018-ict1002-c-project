@@ -104,6 +104,7 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
 
     int diff;
     int start;
+    int counter = 0;
 
     float sum = 0;
     float avg_num = 0;
@@ -122,6 +123,7 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
 	    	float f = ws_cell_as_float(worksheet, col_num, idx);
 	        if (f != NAN) {
 	            sum = sum + f;
+	            counter++;
 	        }
 	    }
     } else {
@@ -142,9 +144,10 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
 	    }
     }
 
-    avg_num = sum / (diff+1);
+    avg_num = sum / counter;
 
-    snprintf(output, MAX_OUTPUT,"The avg is %f", avg_num);
+    snprintf(output, MAX_OUTPUT,"The average of cells between %s and %s is %.*f", 
+    	arg1, arg2, viewport_get_cellprec(), sum);
 }
 
 
@@ -206,16 +209,10 @@ void do_new(const char *arg1, const char *arg2, char *output) {
  *   arg1 - the number of decimal places to show
  */
 void do_prec(const char *arg1, char *output) {
-    int decimalpoint = atoi(arg1);
-    viewport_set_cellprec(decimalpoint);
-  
-//    printf("%*.*f",5,2,number);
-//    ws_cell_as_string(worksheet, decimalpoint);
-    
-//    ws_set(worksheet, col_num, row_num, arg2);
-	snprintf(output, MAX_OUTPUT, "Precision set to %d.", decimalpoint);
-//    snprintf(output, MAX_OUTPUT, "Not implemented.");
-	
+    int prec = atoi(arg1);
+    viewport_set_cellprec(prec);
+
+	snprintf(output, MAX_OUTPUT, "Precision set to %d.", prec);
 }
 
 
@@ -268,88 +265,66 @@ void do_set(const char *arg1, const char *arg2, char *output) {
  *   arg2 - the opposite corner of the rectangle to be summed
  */
 void do_sum(const char *arg1, const char *arg2, char *output) {
-//    int col_num = arg1[0];
-//    int col_num2 = arg2[0];
-//    int col_diff = col_num - col_num2;
-//    int col1 = col_num;
-//    int col2 = col_num2;
-//    int rows1 = 0;
-//    int rows2 = atoi(arg2+1)-1;
-//    int row_diff = rows1 - rows2;
-//    int minRow = rows1;
-//    int minCol = col1;
-//    // Convert the chars after first character to int
-////    int row_num = atoi(arg1+1) - 1;
-//
-//    float sum = 0;
-//
-////    snprintf(output, MAX_OUTPUT, "%c,%d", arg1, arg2);
-//    if(col_diff < 0 ){
-//        col_diff = col_diff *-1;
-//        col_num = arg2[0];
-//    }
-//
-//    if(col2 < minCol){
-//        minCol = col2;
-//    }
-//    for(int i = 0; i <= col_diff ; i++){
-//        int c = minCol + i - 65;
-//        int f = atof(cells[rows1][c]);
-//        sum += f;
-//    const char *arg1 = "B1";
-//    const char *arg2 = "D3";
 	if (!is_cell_valid(arg1, output) || !is_cell_valid(arg2, output)) {
 		return;
 	}
-    
-    int col_num = arg1[0];
-    int col_num2 = arg2[0];
-//    int temp_num = arg2[0] -65;
-    int row_num = atoi(arg1+1);
-    int row_num2 = atoi(arg2+1);
-    int temp_row = atoi(arg1+1);
-    int diff = col_num - col_num2;
-    if(diff < 0){
-        diff = diff * -1;
-    }
-    int col_int = col_num -65;
-    int col_int2 = col_num2 -65;
-    int temp_int = col_int;
-    float sum = 0;
-    char ***cells = worksheet->cells;
-    //    printf("%c\n",col_num);
-    //    printf("%d\n",col_num-65);
-    //    printf("%d\n",col_num2-65);
-    //    printf("row num %d\n",row_num);
-    //    printf("row num2 %d\n",row_num2);
-    //    printf("%d\n",diff);
-    if(col_int2 < col_int){
-        //        printf("works");
-        col_int  = col_int2;
-        col_int2 = temp_int;
-//        printf("%d\n",col_int);
-//        printf("%d\n",col_int2);
-    }
-    if(row_num2 < row_num){
-        row_num  = row_num2;
-        row_num2 = temp_row;
-//        printf("%d\n",row_num);
-//        printf("%d\n",row_num2);
-    }
-    for(int i = col_int ; i <= col_int2 ; i++){
-//        printf("col_works\n");
-        int c = i;
-        for(int k = row_num-1 ; k < row_num2  ; k++){
-            printf("row_works, %d%d\n", k,c);
-            int f = atof(cells[k][c]);
-            sum = sum + f;
-            
-        }
-    }
-        snprintf(output, MAX_OUTPUT,"The sum is %f", sum);
-    
-//     snprintf(output, MAX_OUTPUT, "%c,%d", i, k);
 
+    char col = arg1[0];
+    char col2 = arg2[0];
+    
+    int row_num = atoi(arg1+1) - 1;
+    int row_num2 = atoi(arg2+1) - 1;
+
+    int col_num = col - 65;
+    int col_num2 = col2 - 65;
+
+    if (col_num2 != col_num && row_num2 != row_num) {
+    	snprintf(output, MAX_OUTPUT, "The row or column of the two cell must be the same");
+    	return;
+    }
+
+    int diff;
+    int start;
+
+    float sum = 0;
+    float avg_num = 0;
+
+    if (col_num2 == col_num) {
+    	// average vertically
+    	diff = abs(row_num - row_num2);
+    	// set start as the lower row
+    	if (row_num > row_num2) {
+    		start = row_num2;
+    	} else {
+    		start = row_num;
+    	}
+	    for(int i = 0; i <= diff; i++) {
+	    	int idx = start + i;
+	    	float f = ws_cell_as_float(worksheet, col_num, idx);
+	        if (f != NAN) {
+	            sum = sum + f;
+	        }
+	    }
+    } else {
+    	// average horizontally
+    	diff = abs(col_num - col_num2);
+    	// set start as the lower column
+    	if (col_num > col_num2) {
+    		start = col_num2;
+    	} else {
+    		start = col_num;
+    	}
+    	for(int i = 0; i <= diff; i++) {
+	    	int idx = start + i;
+	    	float f = ws_cell_as_float(worksheet, idx, row_num);
+	        if (f != NAN) {
+	            sum = sum + f;
+	        }
+	    }
+    }
+
+    snprintf(output, MAX_OUTPUT, "The sum of cells between %s and %s is %.*f", 
+    	arg1, arg2, viewport_get_cellprec(), sum);
 }
 
 /*
@@ -359,11 +334,10 @@ void do_sum(const char *arg1, const char *arg2, char *output) {
  *   arg1 - the number of characters for each column
  */
 void do_width(const char *arg1, char *output) {
-//    int width = arg1;
-    
+	int width = atoi(arg1);
+    viewport_set_cellwidth(width);
 	
-	snprintf(output, MAX_OUTPUT, "Not implemented.");
-	
+	snprintf(output, MAX_OUTPUT, "Width changed to %d.", width);
 }
 
 int is_cell_valid(const char *arg, char *output) {

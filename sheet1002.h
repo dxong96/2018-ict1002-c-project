@@ -34,12 +34,11 @@
 typedef struct {
 	int cols;
 	int rows;
-    int prec;
 	// array of rows
 	// each row is an array of column
 	// each column is array of char
-	char ***cells;
 	/* insert other data here as necessary */
+	char ***cells;
 } WORKSHEET;
  
  
