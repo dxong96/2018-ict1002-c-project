@@ -13,11 +13,14 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "sheet1002.h"
 
 WORKSHEET *worksheet;
 int cell_width = 5;
 int cell_prec = 0;
+int cursor_row = 0;
+int cursor_col = 0;
 
 /*
  * Print the current viewing window to the screen.
@@ -31,30 +34,41 @@ void viewport_display(int term_cols, int term_rows) {
 		return;
 	}
 
-	int columns = worksheet->cols;
-	int rows = worksheet->rows;
+	// minus 1 due to the row displaying the columns
+	term_rows -= 1;
+
+	// get the rounded down number of columns that can fit into the term columns
+	int columns = term_cols / cell_width;
+	int rows = term_rows;
 	
-	if (columns > term_cols) {
-		columns = term_cols;
+	if (rows > worksheet->rows) {
+		rows = worksheet->rows;
 	}
 
-	if (rows > term_rows) {
-		rows = term_rows;
+	if (columns > worksheet->cols) {
+		columns = worksheet->cols;
 	}
 
-	printf("%-*c",  cell_width, ' ');
-	for (int i = 0; i < columns; ++i) {
-		printf("%-*c", cell_width, 65 + i);
+	printf("%*c",  cell_width, ' ');
+	columns -= 1;
+	for (int i = cursor_col; i < columns; ++i) {
+		printf("%*c", cell_width, 65 + i);
 	}
 	printf("\n");
 
-	for (int x = 0; x < rows; ++x) {
+	char *word = malloc(sizeof(char) * cell_width + 1);
+	for (int x = cursor_row; x < rows; ++x) {
 		printf("%-*d", cell_width, x + 1);
 
 		for (int y = 0; y < columns; ++y) {
-			char word[cell_width + 1];
 			printf(ws_cell_as_string(worksheet, y, x, cell_width, cell_prec, word));
 		}
+		printf("\n");
+	}
+	free(word);
+
+	int rows_remaining = term_rows - rows;
+	for (int i = 0; i < rows_remaining; ++i) {
 		printf("\n");
 	}
 }
@@ -101,7 +115,8 @@ void viewport_set_cellwidth(int width) {
  *   row - the row number
  */
 void viewport_set_cursor(int col, int row) {
-	
+	cursor_col = col;
+	cursor_row = row;
 }
 
 

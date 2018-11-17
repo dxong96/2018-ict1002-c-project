@@ -19,7 +19,10 @@
 /* the maximum length of the text in a cell */
 #define MAX_WORD    32
 
-/* the dimensions of the terminal  (here assumed to be a standard 80x24 terminal */
+/* 
+the dimensions of the terminal  (here assumed to be a standard 80x24 terminal 
+this refers to the maximum characters not the rows and columns of the sheet
+*/
 #define TERMINAL_COLS 80
 #define TERMINAL_ROWS 24
 
@@ -58,6 +61,7 @@ void do_set(const char *arg1, const char *arg2, char *output);
 void do_sum(const char *arg1, const char *arg2, char *output);
 void do_width(const char *arg1, char *output);
 int is_cell_valid(const char *arg, char *output);
+int has_worksheet(const WORKSHEET *ws);
 
 /* functions defined in viewport.c */
 void viewport_display(int term_cols, int term_rows);

@@ -97,57 +97,41 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
     int col_num = col - 65;
     int col_num2 = col2 - 65;
 
-    if (col_num2 != col_num && row_num2 != row_num) {
-    	snprintf(output, MAX_OUTPUT, "The row or column of the two cell must be the same");
-    	return;
-    }
+    int row_diff = abs(row_num - row_num2);
+    int col_diff = abs(col_num - col_num2);
 
-    int diff;
-    int start;
-    int counter = 0;
+    int row_start;
+    int col_start;
+
+    if (row_num > row_num2) {
+		row_start = row_num2;
+	} else {
+		row_start = row_num;
+	}
+
+	if (col_num > col_num2) {
+		col_start = col_num2;
+	} else {
+		col_start = col_num;
+	}
 
     float sum = 0;
-    float avg_num = 0;
+    int number_count = 0;
+    int row_end = row_start + row_diff;
+    int col_end = col_start + col_diff;
 
-    if (col_num2 == col_num) {
-    	// average vertically
-    	diff = abs(row_num - row_num2);
-    	// set start as the lower row
-    	if (row_num > row_num2) {
-    		start = row_num2;
-    	} else {
-    		start = row_num;
-    	}
-	    for(int i = 0; i <= diff; i++) {
-	    	int idx = start + i;
-	    	float f = ws_cell_as_float(worksheet, col_num, idx);
-	        if (f != NAN) {
+    for(int x = row_start; x <= row_end; x++) {
+    	for (int y = col_start; y <= col_end; ++y) {
+	    	float f = ws_cell_as_float(worksheet, y, x);
+	        if (!isnan(f)) {
 	            sum = sum + f;
-	            counter++;
+	            number_count += 1;
 	        }
-	    }
-    } else {
-    	// average horizontally
-    	diff = abs(col_num - col_num2);
-    	// set start as the lower column
-    	if (col_num > col_num2) {
-    		start = col_num2;
-    	} else {
-    		start = col_num;
     	}
-    	for(int i = 0; i <= diff; i++) {
-	    	int idx = start + i;
-	    	float f = ws_cell_as_float(worksheet, idx, row_num);
-	        if (f != NAN) {
-	            sum = sum + f;
-	        }
-	    }
     }
 
-    avg_num = sum / counter;
-
-    snprintf(output, MAX_OUTPUT,"The average of cells between %s and %s is %.*f", 
-    	arg1, arg2, viewport_get_cellprec(), sum);
+    snprintf(output, MAX_OUTPUT, "The average of cells between %s and %s is %.*f", 
+    	arg1, arg2, viewport_get_cellprec(), sum/number_count);
 }
 
 
@@ -158,9 +142,15 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
  *   arg1 - the identifier of the cell to which to move the cursor
  */
 void do_cursor(const char *arg1, char *output) {
+	if (!is_cell_valid(arg1, output)) {
+		return;
+	}
+
+	char col = arg1[0] - 65;
+	int row = atoi(arg1+1) - 1;
 	
-	snprintf(output, MAX_OUTPUT, "Not implemented.");
-	
+	viewport_set_cursor(col, row);
+	snprintf(output, MAX_OUTPUT, "Cursor set to %s.", arg1);
 }
 
 
@@ -282,49 +272,35 @@ void do_sum(const char *arg1, const char *arg2, char *output) {
     int col_num = col - 65;
     int col_num2 = col2 - 65;
 
-    if (col_num2 != col_num && row_num2 != row_num) {
-    	snprintf(output, MAX_OUTPUT, "The row or column of the two cell must be the same");
-    	return;
-    }
+    int row_diff = abs(row_num - row_num2);
+    int col_diff = abs(col_num - col_num2);
 
-    int diff;
-    int start;
+    int row_start;
+    int col_start;
+
+    if (row_num > row_num2) {
+		row_start = row_num2;
+	} else {
+		row_start = row_num;
+	}
+
+	if (col_num > col_num2) {
+		col_start = col_num2;
+	} else {
+		col_start = col_num;
+	}
 
     float sum = 0;
-    float avg_num = 0;
+    int row_end = row_start + row_diff;
+    int col_end = col_start + col_diff;
 
-    if (col_num2 == col_num) {
-    	// average vertically
-    	diff = abs(row_num - row_num2);
-    	// set start as the lower row
-    	if (row_num > row_num2) {
-    		start = row_num2;
-    	} else {
-    		start = row_num;
-    	}
-	    for(int i = 0; i <= diff; i++) {
-	    	int idx = start + i;
-	    	float f = ws_cell_as_float(worksheet, col_num, idx);
-	        if (f != NAN) {
+    for(int x = row_start; x <= row_end; x++) {
+    	for (int y = col_start; y <= col_end; ++y) {
+	    	float f = ws_cell_as_float(worksheet, y, x);
+	        if (!isnan(f)) {
 	            sum = sum + f;
 	        }
-	    }
-    } else {
-    	// average horizontally
-    	diff = abs(col_num - col_num2);
-    	// set start as the lower column
-    	if (col_num > col_num2) {
-    		start = col_num2;
-    	} else {
-    		start = col_num;
     	}
-    	for(int i = 0; i <= diff; i++) {
-	    	int idx = start + i;
-	    	float f = ws_cell_as_float(worksheet, idx, row_num);
-	        if (f != NAN) {
-	            sum = sum + f;
-	        }
-	    }
     }
 
     snprintf(output, MAX_OUTPUT, "The sum of cells between %s and %s is %.*f", 
@@ -367,4 +343,8 @@ int is_cell_valid(const char *arg, char *output) {
 	}
 
 	return 1;
+}
+
+int has_worksheet(const WORKSHEET *ws) {
+	
 }

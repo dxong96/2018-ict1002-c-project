@@ -60,10 +60,10 @@ char *ws_cell_as_string(WORKSHEET *ws, int col, int row, int width, int prec, ch
   
   if (type == WS_DATA_TYPE_TEXT) {
     exceeds_width = strlen(value) > width;
-    snprintf(buf, actual_width, "%-*s", actual_width, value);
+    snprintf(buf, actual_width, "%*s", width, value);
   } else if (type == WS_DATA_TYPE_FLOAT) {
     exceeds_width = strlen(value) + prec > width;
-    snprintf(buf, actual_width, "%-*.*f", actual_width, prec, atof(value));
+    snprintf(buf, actual_width, "%*.*f", width, prec, atof(value));
   }
 
   if (exceeds_width) {
@@ -144,6 +144,10 @@ int ws_guess_data_type(const char *value) {
  *   ws - a pointer to the worksheet to be de-allocated.
  */
 void ws_free(WORKSHEET *ws) {
+  if (ws == NULL) {
+    return;
+  }
+  
   for (int x = 0; x < ws->rows; ++x) {
     free(ws->cells[x]);
     for (int y = 0; y < ws->cols; ++y) {
