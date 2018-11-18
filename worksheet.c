@@ -225,7 +225,82 @@ WORKSHEET *ws_new(int cols, int rows) {
   *   the number of rows successfully read and inserted into the worksheet (may be less than the number of rows in the file)
   */
 int ws_read_csv(WORKSHEET *ws, FILE *f) {
-	
+	char *buffer = malloc(sizeof(char) * 255);
+  char *result;
+  char *token;
+  char *line_cursor;
+  char *comma_substring;
+  int row_count = 0;
+  int col_count = 0;
+  int continue_read = 0;
+
+  result = fgets(buffer, 255, f);
+  line_cursor = result;
+  while(result != NULL && row_count < ws->rows) {
+    int length = strlen(buffer);
+
+    while(col_count < ws->cols) {
+      comma_substring = strstr(line_cursor, ",");
+      if (comma_substring != NULL) {
+        // comma is found
+        int token_length = comma_substring - line_cursor;
+        token = malloc(sizeof(char) * (token_length + 1));
+        strncpy(token, line_cursor, token_length);
+        token[token_length] = '\0';
+        // set cursor to after the comma
+        line_cursor = comma_substring + 1;
+      } else {
+        // comma is not found
+        // copy remaining characters into token
+        int token_length = strlen(line_cursor);
+        // malloc with 1 less character to remove the trailing newline
+        token = malloc(sizeof(char) * token_length);
+        strcpy(token, line_cursor);
+        token[token_length - 1] = '\0';
+        // set cursor to end of line
+        line_cursor = &result[length];
+      }
+
+
+      char *cell = ws->cells[row_count][col_count];
+      if (continue_read) {
+        // append the value
+        int length_left = MAX_WORD - strlen(cell);
+        strncat(cell, token, length_left);
+        continue_read = 0;
+      } else {
+        // set the value
+        ws_set(ws, col_count, row_count, token);  
+      }
+
+      // if cell is invalid clear the value
+      if (ws_guess_data_type(cell) == WS_DATA_TYPE_ILLEGAL) {
+        ws_set(ws, col_count, row_count, "\0");
+      }
+
+      free(token);
+
+      if (line_cursor[0] == '\0') {
+        break;
+      }
+
+      col_count += 1;
+    }
+    
+    int line_ended = result[length - 1] == '\n';
+    if (line_ended) {
+      result[length - 1] = '\0';
+      row_count += 1;
+      col_count = 0;
+      continue_read = 0;
+    } else {
+      continue_read = 1;
+    }
+
+    result = fgets(buffer, 255, f);
+    line_cursor = result;
+  }
+
 	return 0;
 }
  

@@ -161,9 +161,14 @@ void do_cursor(const char *arg1, char *output) {
  *   arg1 - the filename
  */
 void do_load(const char *arg1, char *output) {
-	
-	snprintf(output, MAX_OUTPUT, "Not implemented.");
-
+	FILE *fp = fopen(arg1, "r");
+	if (fp == NULL) {
+		snprintf(output, MAX_OUTPUT, "Failed to load csv file, %s", arg1);
+	} else {
+		ws_read_csv(worksheet, fp);
+		fclose(fp);
+		snprintf(output, MAX_OUTPUT, "Loaded csv file, %s", arg1);
+	}
 }
 
 
