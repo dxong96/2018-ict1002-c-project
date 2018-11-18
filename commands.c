@@ -218,9 +218,10 @@ void do_prec(const char *arg1, char *output) {
  *  arg1 - the filename
  */
 void do_save(const char *arg1, char *output) {
-	
-	snprintf(output, MAX_OUTPUT, "Not implemented.");
-	
+	FILE *fp = fopen(arg1, "w");
+	ws_write_csv(worksheet, fp);
+	fclose(fp);
+	snprintf(output, MAX_OUTPUT, "Saved csv file, %s", arg1);
 }
 
 

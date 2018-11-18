@@ -330,6 +330,13 @@ void ws_set(WORKSHEET *ws, int col, int row, const char *value) {
  *   the number of rows successfully written
  */
 int ws_write_csv(WORKSHEET *ws, FILE *f) {
-	
+	for (int x = 0; x < ws->rows; ++x) {
+    fputs(ws->cells[x][0], f);
+    for (int y = 1; y < ws->rows; ++y) {
+      fputc(',', f);
+      fputs(ws->cells[x][y], f);
+    }
+    fputc('\n', f);
+  }
 	return 0;
 }

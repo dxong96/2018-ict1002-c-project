@@ -41,6 +41,8 @@ void viewport_display(int term_cols, int term_rows) {
 	int columns = term_cols / cell_width;
 	int rows = term_rows;
 	
+	// minus one for the column of row labels
+	columns -= 1;
 	if (rows > worksheet->rows) {
 		rows = worksheet->rows;
 	}
@@ -50,7 +52,6 @@ void viewport_display(int term_cols, int term_rows) {
 	}
 
 	printf("%*c",  cell_width, ' ');
-	columns -= 1;
 	for (int i = cursor_col; i < columns; ++i) {
 		printf("%*c", cell_width, 65 + i);
 	}
