@@ -57,7 +57,7 @@ void viewport_display(int term_cols, int term_rows) {
 	}
 	printf("\n");
 
-	char *word = malloc(sizeof(char) * cell_width + 1);
+	char *word = malloc(sizeof(char) * (cell_width + 1));
 	for (int x = cursor_row; x < rows; ++x) {
 		printf("%-*d", cell_width, x + 1);
 

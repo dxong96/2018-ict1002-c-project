@@ -130,8 +130,13 @@ void do_avg(const char *arg1, const char *arg2, char *output) {
     	}
     }
 
+    float average = sum/number_count;
+    if (isnan(average)) {
+    	average = .0;
+    }
+
     snprintf(output, MAX_OUTPUT, "The average of cells between %s and %s is %.*f", 
-    	arg1, arg2, viewport_get_cellprec(), sum/number_count);
+    	arg1, arg2, viewport_get_cellprec(), average);
 }
 
 
@@ -185,14 +190,20 @@ void do_new(const char *arg1, const char *arg2, char *output) {
 
 	if (cols > MAX_COLUMNS) {
 		snprintf(output, MAX_OUTPUT, "You are allowed only up to 26 columns");
+	} else if (cols <= 0 || rows <= 0) {
+		snprintf(output, MAX_OUTPUT, "Please enter valid row and column size");
 	} else {
 		if (worksheet != NULL) {
 			ws_free(worksheet);
 		}
 
 		worksheet = ws_new(cols, rows);
-		viewport_set_worksheet(worksheet);
-		snprintf(output, MAX_OUTPUT, "Successfully created worksheet with %d cols and %d rows.", cols, rows);
+		if (worksheet == NULL) {
+			snprintf(output, MAX_OUTPUT, "Failed to create worksheet");
+		} else {
+			viewport_set_worksheet(worksheet);
+			snprintf(output, MAX_OUTPUT, "Successfully created worksheet with %d cols and %d rows.", cols, rows);
+		}
 	}
 }
 
@@ -204,10 +215,18 @@ void do_new(const char *arg1, const char *arg2, char *output) {
  *   arg1 - the number of decimal places to show
  */
 void do_prec(const char *arg1, char *output) {
+	if (arg1 == NULL) {
+		snprintf(output, MAX_OUTPUT, "Current precision is %d", viewport_get_cellprec());
+		return;
+	}
     int prec = atoi(arg1);
-    viewport_set_cellprec(prec);
+    if (prec < 0) {
+    	snprintf(output, MAX_OUTPUT, "Enter a positive precision.");	
+    } else {
+    	viewport_set_cellprec(prec);
 
-	snprintf(output, MAX_OUTPUT, "Precision set to %d.", prec);
+		snprintf(output, MAX_OUTPUT, "Precision set to %d.", prec);	
+    }
 }
 
 
@@ -218,10 +237,19 @@ void do_prec(const char *arg1, char *output) {
  *  arg1 - the filename
  */
 void do_save(const char *arg1, char *output) {
+	if (arg1 == NULL) {
+		snprintf(output, MAX_OUTPUT, "Please enter a file name to save");
+		return;
+	}
+
 	FILE *fp = fopen(arg1, "w");
-	ws_write_csv(worksheet, fp);
+	int rows_written = ws_write_csv(worksheet, fp);
+	if (rows_written == 0) {
+		snprintf(output, MAX_OUTPUT, "Error saving worksheet");
+	} else {
+		snprintf(output, MAX_OUTPUT, "%d rows saved at %s", rows_written, arg1);
+	}
 	fclose(fp);
-	snprintf(output, MAX_OUTPUT, "Saved csv file, %s", arg1);
 }
 
 
@@ -327,6 +355,11 @@ void do_width(const char *arg1, char *output) {
 }
 
 int is_cell_valid(const char *arg, char *output) {
+	if (arg == NULL) {
+		snprintf(output, MAX_OUTPUT, "Invalid cell");
+		return 0;
+	}
+
 	char col = arg[0];
 
 	if (col < 'A' || col > 'Z') {

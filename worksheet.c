@@ -187,7 +187,7 @@ WORKSHEET *ws_new(int cols, int rows) {
       }
 
       for (int y = 0; y < cols; ++y) {
-        cells[x][y] = malloc(MAX_WORD * sizeof(char));
+        cells[x][y] = malloc((MAX_WORD + 1) * sizeof(char));
         // set the string null char at the first char to prevent showing strange characters
         cells[x][y][0] = '\0';
 
@@ -330,13 +330,19 @@ void ws_set(WORKSHEET *ws, int col, int row, const char *value) {
  *   the number of rows successfully written
  */
 int ws_write_csv(WORKSHEET *ws, FILE *f) {
+  int rows_written = 0;
 	for (int x = 0; x < ws->rows; ++x) {
     fputs(ws->cells[x][0], f);
+    // an error occurred
+    if(feof(f)) {
+       return 0;
+    }
     for (int y = 1; y < ws->rows; ++y) {
       fputc(',', f);
       fputs(ws->cells[x][y], f);
     }
     fputc('\n', f);
+    rows_written += 1;
   }
-	return 0;
+	return rows_written;
 }
