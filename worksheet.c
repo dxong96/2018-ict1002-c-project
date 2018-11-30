@@ -62,14 +62,16 @@ char *ws_cell_as_string(WORKSHEET *ws, int col, int row, int width, int prec, ch
     exceeds_width = strlen(value) > width;
     snprintf(buf, actual_width, "%*s", width, value);
   } else if (type == WS_DATA_TYPE_FLOAT) {
-    int value_length = strlen(value);
-    int has_dot = strrchr(value, '.') != NULL;
-    if (!has_dot) {
-      value_length += 1; // for the dot
-      value_length += prec;
+    double float_value = atof(value);
+    int int_value = (int) float_value;
+    int digits = 1;
+    while (int_value >= 10) {
+      digits++;
+      int_value /= 10;
     }
-    exceeds_width = value_length > width;
-    snprintf(buf, actual_width, "%*.*f", width, prec, atof(value));
+
+    exceeds_width = digits + 1 + prec > width;
+    snprintf(buf, actual_width, "%*.*f", width, prec, float_value);
   }
 
   if (exceeds_width) {
@@ -155,10 +157,10 @@ void ws_free(WORKSHEET *ws) {
   }
   
   for (int x = 0; x < ws->rows; ++x) {
-    free(ws->cells[x]);
     for (int y = 0; y < ws->cols; ++y) {
       free(ws->cells[x][y]);
     }
+    free(ws->cells[x]);
   }
   free(ws);
 }
@@ -306,6 +308,7 @@ int ws_read_csv(WORKSHEET *ws, FILE *f) {
     result = fgets(buffer, 255, f);
     line_cursor = result;
   }
+  free(buffer);
 
 	return 0;
 }
