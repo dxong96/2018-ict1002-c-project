@@ -62,7 +62,13 @@ char *ws_cell_as_string(WORKSHEET *ws, int col, int row, int width, int prec, ch
     exceeds_width = strlen(value) > width;
     snprintf(buf, actual_width, "%*s", width, value);
   } else if (type == WS_DATA_TYPE_FLOAT) {
-    exceeds_width = strlen(value) + prec > width;
+    int value_length = strlen(value);
+    int has_dot = strrchr(value, '.') != NULL;
+    if (!has_dot) {
+      value_length += 1; // for the dot
+      value_length += prec;
+    }
+    exceeds_width = value_length > width;
     snprintf(buf, actual_width, "%*.*f", width, prec, atof(value));
   }
 
