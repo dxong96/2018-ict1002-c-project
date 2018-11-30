@@ -383,7 +383,3 @@ int is_cell_valid(const char *arg, char *output) {
 
 	return 1;
 }
-
-int has_worksheet(const WORKSHEET *ws) {
-	
-}
