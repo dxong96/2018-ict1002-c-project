@@ -348,10 +348,14 @@ void do_sum(const char *arg1, const char *arg2, char *output) {
  *   arg1 - the number of characters for each column
  */
 void do_width(const char *arg1, char *output) {
-	int width = atoi(arg1);
-    viewport_set_cellwidth(width);
-	
-	snprintf(output, MAX_OUTPUT, "Width changed to %d.", width);
+    int width = atoi(arg1);
+    if (width <= 0) {
+    	snprintf(output, MAX_OUTPUT, "Enter a width greater than 0.");	
+    } else {
+    	viewport_set_cellwidth(width);
+
+		snprintf(output, MAX_OUTPUT, "Width changed to %d.", width);
+    }
 }
 
 int is_cell_valid(const char *arg, char *output) {
