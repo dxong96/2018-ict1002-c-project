@@ -170,6 +170,14 @@ void do_load(const char *arg1, char *output) {
 	if (fp == NULL) {
 		snprintf(output, MAX_OUTPUT, "Failed to load csv file, %s", arg1);
 	} else {
+		if (worksheet == NULL) {
+			snprintf(output, MAX_OUTPUT, "Please create a worksheet first.", arg1);
+			return;
+		} else {
+			WORKSHEET *new_ws = ws_new(worksheet->cols, worksheet->rows);
+			ws_free(worksheet);
+			worksheet = new_ws;
+		}
 		ws_read_csv(worksheet, fp);
 		fclose(fp);
 		snprintf(output, MAX_OUTPUT, "Loaded csv file, %s", arg1);
@@ -383,6 +391,14 @@ int is_cell_valid(const char *arg, char *output) {
 			snprintf(output, MAX_OUTPUT, "Invalid row number");
 			return 0;
 		}
+	}
+
+	int row = atoi(arg+1);
+
+	// check if row is less than 1 or more than worksheet rows
+	if (row < 1 || row > worksheet->rows) {
+		snprintf(output, MAX_OUTPUT, "Enter row between 1 - %d", worksheet->rows);
+		return 0;
 	}
 
 	return 1;
