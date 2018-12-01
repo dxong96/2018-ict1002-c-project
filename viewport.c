@@ -61,7 +61,7 @@ void viewport_display(int term_cols, int term_rows) {
 	for (int x = cursor_row; x < rows; ++x) {
 		printf("%-*d", cell_width, x + 1);
 
-		for (int y = 0; y < columns; ++y) {
+		for (int y = cursor_col; y < columns; ++y) {
 			printf(ws_cell_as_string(worksheet, y, x, cell_width, cell_prec, word));
 		}
 		printf("\n");
